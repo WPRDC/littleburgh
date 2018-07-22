@@ -6,6 +6,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import ckanapi
 from pprint import pprint
+from datetime import datetime
 
 def get_resource_data(site,resource_id,API_key=None,count=50,offset=0,fields=None):
     # Use the datastore_search API endpoint to get <count> records from
@@ -134,7 +135,9 @@ Story.append(Paragraph(title, styles["Normal"]))
 meals = [s for s in services if re.search('meals', s['category'])]
 filtered_meals = format_meals(meals,Story,keep_kids_only=False,keep_pets_only=False,hoods=hoods)
 
-
+footer = "[This information was obtained for {} from https://data.wprdc.org/dataset/bigburgh-social-service-listings]".format(datetime.strftime(datetime.now(),"%b %Y"))
+foooter = "<font size=8>{}</font>".format(footer)
+Story.append(Paragraph(footer, styles["Normal"]))
 doc.build(Story)
 print("{} meal/pantry locations found in {} neighborhoods.".format(len(filtered_meals),len(hoods)))
 

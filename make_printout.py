@@ -2,6 +2,8 @@ import re, csv, sys
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.lib.enums import TA_JUSTIFY
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 import ckanapi
 from pprint import pprint
 
@@ -45,7 +47,14 @@ def get_services(site):
     data = get_resource_data(site,resource_id,count=9999999)
     return data
 
-def format_meals(meals,kids_only=False,hoods=None):
+def extend_story(Story,line):
+    styles=getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='Justify', alignment=TA_JUSTIFY))
+    ptext = '<font size=12>{}</font>'.format(line)
+    Story.append(Paragraph(ptext, styles["Normal"]))
+    Story.append(Spacer(1, 12))
+
+def format_meals(meals,Story,kids_only=False,hoods=None):
     from collections import defaultdict
     ms_by_hood = defaultdict(list)
     for m in meals:

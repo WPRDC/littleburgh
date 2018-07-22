@@ -48,11 +48,20 @@ def get_services(site):
     return data
 
 def extend_story(Story,line):
-    styles=getSampleStyleSheet()
-    styles.add(ParagraphStyle(name='Justify', alignment=TA_JUSTIFY))
-    ptext = '<font size=12>{}</font>'.format(line)
-    Story.append(Paragraph(ptext, styles["Normal"]))
-    Story.append(Spacer(1, 12))
+    if line == "":
+        Story.append(Spacer(1, 12))
+    else:
+        styles=getSampleStyleSheet()
+        #styles.add(ParagraphStyle(name='Justify', alignment=TA_JUSTIFY, fontName='SourceSansPro-Bold', fontSize=10, leftIndent=1))
+        left_indent = 0
+        if re.search("Recommended",line) is not None:
+            left_indent = 18
+        if re.search("Requirements",line) is not None:
+            left_indent = 18
+        styles.add(ParagraphStyle(name='Justify-and-Indent', alignment=TA_JUSTIFY, fontSize=10, leftIndent=left_indent))
+        ptext = '<font size=12>{}</font>'.format(line)
+        ptext = '{}'.format(line)
+        Story.append(Paragraph(ptext, styles["Justify-and-Indent"]))
 
 def format_meals(meals,Story,keep_kids_only=True,keep_pets_only=True,hoods=None):
     from collections import defaultdict
@@ -91,7 +100,7 @@ def format_meals(meals,Story,keep_kids_only=True,keep_pets_only=True,hoods=None)
                 if requirements not in [None,'none','None']:
                     extend_story(Story, "       Requirements: {}".format(requirements))
                 recommended_for = m['recommended_for']
-                if recommended_for not in ['all']:
+                if recommended_for not in ['all','All in need','all who need food']:
                     extend_story(Story, "       Recommended for: {}".format(recommended_for))
                 if k != len(ms)-1:
                     extend_story(Story, "")
@@ -113,16 +122,16 @@ site = "https://data.wprdc.org"
 services = get_services(site)
 
 doc = SimpleDocTemplate("meals.pdf",pagesize=letter,
-                        rightMargin=72,leftMargin=72,
+                        rightMargin=52,leftMargin=52,
                         topMargin=72,bottomMargin=18)
 Story=[]
 width, height = letter
-title = "Meal/food opportunities extracted from Social Service listings from BigBurgh.com"
-extend_story(Story,title)
+title = "==== Meal/food opportunities extracted from Social Service listings from BigBurgh.com ===="
+styles=getSampleStyleSheet()
+Story.append(Paragraph(title, styles["Normal"]))
 
 
 meals = [s for s in services if re.search('meals', s['category'])]
-pprint(meals)
 filtered_meals = format_meals(meals,Story,keep_kids_only=False,keep_pets_only=False,hoods=hoods)
 
 

@@ -54,15 +54,18 @@ def extend_story(Story,line):
     Story.append(Paragraph(ptext, styles["Normal"]))
     Story.append(Spacer(1, 12))
 
-def format_meals(meals,Story,kids_only=False,hoods=None):
+def format_meals(meals,Story,keep_kids_only=True,keep_pets_only=True,hoods=None):
     from collections import defaultdict
     ms_by_hood = defaultdict(list)
     for m in meals:
         store = True
-        if not kids_only:
-            store = False
-        elif m['requirements'] is not None and re.search('kids',m['requirements'], re.IGNORECASE) is not None:
-            store = False
+        if not keep_kids_only:
+            if m['requirements'] is not None and re.search('kids',m['requirements'], re.IGNORECASE) is not None:
+                store = False
+
+        if not keep_pets_only:
+            if m['recommended_for'] is not None and m['recommended_for'] == 'all pets in need':
+                store = False
 
         if store:
             ms_by_hood[m['neighborhood'].upper()].append(m)
@@ -120,7 +123,7 @@ extend_story(Story,title)
 
 meals = [s for s in services if re.search('meals', s['category'])]
 pprint(meals)
-filtered_meals = format_meals(meals,Story,kids_only=True,hoods=hoods)
+filtered_meals = format_meals(meals,Story,keep_kids_only=False,keep_pets_only=False,hoods=hoods)
 
 
 doc.build(Story)

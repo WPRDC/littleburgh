@@ -75,26 +75,26 @@ def format_meals(meals,Story,kids_only=False,hoods=None):
     transmitted_ms = []
     for j,hood in enumerate(sorted(ms_by_hood.keys())):
         if hood in hoods:
-            print("{}".format(hood))
+            extend_story(Story, "{}".format(hood))
             ms = ms_by_hood[hood]
             for k,m in enumerate(ms):
                 transmitted_ms.append(m)
-                print("    {}".format(m['service_name']))
-                print("    {}".format(m['address']))
-                print("    {}".format(m['narrative']))
+                extend_story(Story, "    {}".format(m['service_name']))
+                extend_story(Story, "    {}".format(m['address']))
+                extend_story(Story, "    {}".format(m['narrative']))
                 holiday_exception = " ({})".format(m['holiday_exception']) if m['holiday_exception'] is not None else ""
-                print("    {}{}".format(m['schedule'], holiday_exception))
+                extend_story(Story, "    {}{}".format(m['schedule'], holiday_exception))
                 requirements = m['requirements']
                 if requirements not in [None,'none','None']:
-                    print("       Requirements: {}".format(requirements))
+                    extend_story(Story, "       Requirements: {}".format(requirements))
                 recommended_for = m['recommended_for']
                 if recommended_for not in ['all']:
-                    print("       Recommended for: {}".format(recommended_for))
+                    extend_story(Story, "       Recommended for: {}".format(recommended_for))
                 if k != len(ms)-1:
-                    print("")
+                    extend_story(Story, "")
 
             if j != len(ms_by_hood)-1:
-                print("")
+                extend_story(Story, "")
 
     return transmitted_ms
 
@@ -109,15 +109,21 @@ else:
 site = "https://data.wprdc.org"
 services = get_services(site)
 
+doc = SimpleDocTemplate("meals.pdf",pagesize=letter,
+                        rightMargin=72,leftMargin=72,
+                        topMargin=72,bottomMargin=18)
+Story=[]
+width, height = letter
+title = "Meal/food opportunities extracted from Social Service listings from BigBurgh.com"
+extend_story(Story,title)
+
+
 meals = [s for s in services if re.search('meals', s['category'])]
-
 pprint(meals)
-filtered_meals = format_meals(meals,kids_only=True,hoods=hoods)
+filtered_meals = format_meals(meals,Story,kids_only=True,hoods=hoods)
 
-#c = canvas.Canvas("print-me-out.pdf", pagesize=letter)
-#width, height = letter
-#c.drawString(100,750,"Social Service listings (from BigBurgh.com)")
-#c.save()
+
+doc.build(Story)
 print("{} meal/pantry locations found in {} neighborhoods.".format(len(filtered_meals),len(hoods)))
 
 # > python make_printout.py Squirrel Hill, Wilkinsburg, Downtown

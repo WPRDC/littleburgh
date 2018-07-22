@@ -45,7 +45,7 @@ def get_services(site):
     data = get_resource_data(site,resource_id,count=9999999)
     return data
 
-def format_meals(meals,kids_only=False):
+def format_meals(meals,kids_only=False,hoods=None):
     from collections import defaultdict
     ms_by_hood = defaultdict(list)
     for m in meals:
@@ -58,30 +58,44 @@ def format_meals(meals,kids_only=False):
         if store:
             ms_by_hood[m['neighborhood'].upper()].append(m)
 
+    if hoods is None:
+        hoods = ms_by_hood.keys()
+    else:
+        hoods = [h.upper() for h in hoods]
+
     transmitted_ms = []
     for j,hood in enumerate(sorted(ms_by_hood.keys())):
-        print("{}".format(hood))
-        ms = ms_by_hood[hood]
-        for k,m in enumerate(ms):
-            transmitted_ms.append(m)
-            print("    {}".format(m['service_name']))
-            print("    {}".format(m['address']))
-            print("    {}".format(m['narrative']))
-            holiday_exception = " ({})".format(m['holiday_exception']) if m['holiday_exception'] is not None else ""
-            print("    {}{}".format(m['schedule'], holiday_exception))
-            requirements = m['requirements']
-            if requirements not in [None,'none']:
-                print("      Requirements: {}".format(requirements))
-            recommended_for = m['recommended_for']
-            if recommended_for not in ['all']:
-                print("      Recommended for: {}".format(recommended_for))
-            if k != len(ms)-1:
+        if hood in hoods:
+            print("{}".format(hood))
+            ms = ms_by_hood[hood]
+            for k,m in enumerate(ms):
+                transmitted_ms.append(m)
+                print("    {}".format(m['service_name']))
+                print("    {}".format(m['address']))
+                print("    {}".format(m['narrative']))
+                holiday_exception = " ({})".format(m['holiday_exception']) if m['holiday_exception'] is not None else ""
+                print("    {}{}".format(m['schedule'], holiday_exception))
+                requirements = m['requirements']
+                if requirements not in [None,'none','None']:
+                    print("       Requirements: {}".format(requirements))
+                recommended_for = m['recommended_for']
+                if recommended_for not in ['all']:
+                    print("       Recommended for: {}".format(recommended_for))
+                if k != len(ms)-1:
+                    print("")
+
+            if j != len(ms_by_hood)-1:
                 print("")
 
-        if j != len(ms_by_hood)-1:
-            print("")
-
     return transmitted_ms
+
+if len(sys.argv) == 1:
+    hoods = None
+else:
+    hoods_args = sys.argv[1:]
+    hoodstring = ' '.join(hoods_args)
+    hoods = hoodstring.split(', ')
+
 
 site = "https://data.wprdc.org"
 services = get_services(site)
@@ -89,10 +103,12 @@ services = get_services(site)
 meals = [s for s in services if re.search('meals', s['category'])]
 
 pprint(meals)
-filtered_meals = format_meals(meals,kids_only=True)
+filtered_meals = format_meals(meals,kids_only=True,hoods=hoods)
 
 #c = canvas.Canvas("print-me-out.pdf", pagesize=letter)
 #width, height = letter
 #c.drawString(100,750,"Social Service listings (from BigBurgh.com)")
 #c.save()
-print(len(filtered_meals))
+print("{} meal/pantry locations found in {} neighborhoods.".format(len(filtered_meals),len(hoods)))
+
+# > python make_printout.py Squirrel Hill, Wilkinsburg, Downtown

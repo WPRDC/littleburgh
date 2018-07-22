@@ -48,19 +48,21 @@ def get_services(site):
     data = get_resource_data(site,resource_id,count=9999999)
     return data
 
-def extend_story(Story,line):
+def extend_story(Story,line,indent=None):
     if line == "":
         Story.append(Spacer(1, 12))
     else:
         styles=getSampleStyleSheet()
         #styles.add(ParagraphStyle(name='Justify', alignment=TA_JUSTIFY, fontName='SourceSansPro-Bold', fontSize=10, leftIndent=1))
         left_indent = 0
+        if indent is not None:
+            left_indent = indent
         if re.search("Recommended",line) is not None:
             left_indent = 18
         if re.search("Requirements",line) is not None:
             left_indent = 18
         styles.add(ParagraphStyle(name='Justify-and-Indent', alignment=TA_JUSTIFY, fontSize=10, leftIndent=left_indent))
-        ptext = '<font size=12>{}</font>'.format(line)
+        #ptext = '<font size=12>{}</font>'.format(line)
         ptext = '{}'.format(line)
         Story.append(Paragraph(ptext, styles["Justify-and-Indent"]))
 
@@ -94,7 +96,7 @@ def format_meals(meals,Story,keep_kids_only=True,keep_pets_only=True,hoods=None)
                 transmitted_ms.append(m)
                 extend_story(Story, "    {}".format(m['service_name']))
                 extend_story(Story, "    {}".format(m['address']))
-                extend_story(Story, "    {}".format(m['narrative']))
+                extend_story(Story, "    {}".format(m['narrative']), 9)
                 holiday_exception = " ({})".format(m['holiday_exception']) if m['holiday_exception'] is not None else ""
                 extend_story(Story, "    {}{}".format(m['schedule'], holiday_exception))
                 requirements = m['requirements']

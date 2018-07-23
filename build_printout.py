@@ -94,17 +94,16 @@ def format_meals(meals,Story,keep_kids_only=True,keep_pets_only=True,hoods=None)
             ms = ms_by_hood[hood]
             for k,m in enumerate(ms):
                 transmitted_ms.append(m)
-                extend_story(Story, "    {}".format(m['service_name']))
-                extend_story(Story, "    {}".format(m['address']))
-                extend_story(Story, "    {}".format(m['narrative']), 9)
+                extend_story(Story, "    <b>{}</b> ({})".format(m['service_name'],m['address']))
                 holiday_exception = " ({})".format(m['holiday_exception']) if m['holiday_exception'] is not None else ""
                 extend_story(Story, "    {}{}".format(m['schedule'], holiday_exception))
+                extend_story(Story, "    {}".format(m['narrative']), 9)
                 requirements = m['requirements']
                 if requirements not in [None,'none','None']:
-                    extend_story(Story, "       Requirements: {}".format(requirements))
+                    extend_story(Story, "       <u>Requirements</u>: {}".format(requirements))
                 recommended_for = m['recommended_for']
                 if recommended_for not in ['all','All in need','all who need food']:
-                    extend_story(Story, "       Recommended for: {}".format(recommended_for))
+                    extend_story(Story, "       <u>Recommended for</u>: {}".format(recommended_for))
                 if k != len(ms)-1:
                     extend_story(Story, "")
 
